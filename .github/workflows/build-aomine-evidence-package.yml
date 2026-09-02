@@ -1,0 +1,48 @@
+name: Build Aomine Practice Evidence Package
+
+on:
+  push:
+    branches:
+      - artifact/aomine-evidence-pdf-package
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Japanese font and Python packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-ipafont-gothic
+          python -m pip install --upgrade pip
+          python -m pip install reportlab pypdf
+
+      - name: Generate and verify PDF package
+        run: python tools/generate_aomine_evidence_package.py
+
+      - name: Show generated package summary
+        run: |
+          cat "output/【青嶺柔道整復専門学校】令和8年度第三者評価_練習用_PDF72件/package-summary.json"
+          test "$(find "output/【青嶺柔道整復専門学校】令和8年度第三者評価_練習用_PDF72件" -type f -name '*.pdf' | wc -l)" -eq 72
+          du -sh output
+
+      - name: Upload verified package
+        uses: actions/upload-artifact@v4
+        with:
+          name: aomine-evidence-pdf-package
+          path: output/【青嶺柔道整復専門学校】令和8年度第三者評価_練習用_PDF72件/
+          if-no-files-found: error
+          compression-level: 6
+          retention-days: 30
