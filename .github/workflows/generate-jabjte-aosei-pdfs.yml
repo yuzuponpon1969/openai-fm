@@ -1,0 +1,52 @@
+name: Generate JABJTE Aosei Practice PDFs
+
+on:
+  push:
+    branches:
+      - artifact/jabjte-aosei-practice-pdfs
+    paths:
+      - artifact_generators/generate_jabjte_aosei_pdfs.py
+      - .github/workflows/generate-jabjte-aosei-pdfs.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Japanese font and Python dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends fonts-ipaexfont-gothic
+          python -m pip install --upgrade pip
+          python -m pip install reportlab==4.4.3 pypdf==6.0.0
+
+      - name: Generate and validate PDFs
+        run: python artifact_generators/generate_jabjte_aosei_pdfs.py
+
+      - name: Show artifact manifest
+        run: |
+          cat generated_jabjte_practice_pdfs/artifact-manifest.json
+          find generated_jabjte_practice_pdfs -type f -maxdepth 3 -printf '%p %s bytes\n' | sort
+
+      - name: Upload generated package
+        uses: actions/upload-artifact@v4
+        with:
+          name: JABJTE-aosei-practice-pdf-package
+          path: |
+            generated_jabjte_practice_pdfs/*.zip
+            generated_jabjte_practice_pdfs/artifact-manifest.json
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0
