@@ -38,12 +38,32 @@ jobs:
       - name: Show artifact manifest
         run: |
           cat generated_jabjte_practice_pdfs/artifact-manifest.json
-          find generated_jabjte_practice_pdfs -type f -maxdepth 3 -printf '%p %s bytes\n' | sort
+          find generated_jabjte_practice_pdfs -type f -maxdepth 5 -printf '%p %s bytes\n' | sort
 
-      - name: Upload generated package
+      - name: Upload complete practice package
         uses: actions/upload-artifact@v4
         with:
-          name: JABJTE-aosei-practice-pdf-package
+          name: JABJTE-aosei-complete-practice-package
+          path: |
+            generated_jabjte_practice_pdfs/JABJTE_青嶺柔道整復専門学校_練習用根拠資料パッケージ/**
+            generated_jabjte_practice_pdfs/artifact-manifest.json
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6
+
+      - name: Upload school folder ready for Google Drive
+        uses: actions/upload-artifact@v4
+        with:
+          name: JABJTE-aosei-school-folder-ready-for-drive
+          path: generated_jabjte_practice_pdfs/JABJTE_青嶺柔道整復専門学校_練習用根拠資料パッケージ/02_GoogleDriveへ配置する学校フォルダ/**
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 6
+
+      - name: Upload packaged ZIPs
+        uses: actions/upload-artifact@v4
+        with:
+          name: JABJTE-aosei-packaged-zips
           path: |
             generated_jabjte_practice_pdfs/*.zip
             generated_jabjte_practice_pdfs/artifact-manifest.json
